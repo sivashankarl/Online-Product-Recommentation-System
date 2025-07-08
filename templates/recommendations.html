@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Recommended For You</h2>
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="refineDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-sliders-h me-1"></i> Refine
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="refineDropdown">
+        <li><a class="dropdown-item" href="#" onclick="filterRecommendations('price_low')">Price: Low to High</a></li>
+        <li><a class="dropdown-item" href="#" onclick="filterRecommendations('price_high')">Price: High to Low</a></li>
+        <li><a class="dropdown-item" href="#" onclick="filterRecommendations('rating')">Highest Rated</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="row" id="recommendations-container">
+    {% for pid, product in products.items() %}
+    <div class="col-md-4 mb-4 product-card" 
+         data-price="{{ product.price }}" 
+         data-rating="{{ product.rating }}">
+      <div class="card h-100">
+        <img src="{{ url_for('static', filename='images/' + product.image) }}" class="card-img-top" alt="{{ product.name }}">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <button class="btn btn-sm btn-outline-danger not-interested" 
+                    data-pid="{{ pid }}" title="Not interested">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="mb-2">
+            {% for i in range(5) %}
+              {% if i < product.rating|int %}
+                <i class="fas fa-star text-warning"></i>
+              {% else %}
+                <i class="far fa-star text-warning"></i>
+              {% endif %}
+            {% endfor %}
+            <span class="ms-1 text-muted small">{{ product.rating|round(1) }}</span>
+          </div>
+          <p class="card-text">₹{{ "%.2f"|format(product.price) }}</p>
+          <a href="{{ url_for('product_detail', product_id=pid) }}" class="btn btn-primary">View Details</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+function filterRecommendations(sortType) {
+  const container = $('#recommendations-container');
+  const items = container.find('.product-card').get();
+  
+  items.sort((a, b) => {
+    const aPrice = parseFloat($(a).data('price'));
+    const bPrice = parseFloat($(b).data('price'));
+    const aRating = parseFloat($(a).data('rating'));
+    const bRating = parseFloat($(b).data('rating'));
+    
+    if (sortType === 'price_low') return aPrice - bPrice;
+    if (sortType === 'price_high') return bPrice - aPrice;
+    if (sortType === 'rating') return bRating - aRating;
+    return 0;
+  });
+  
+  container.empty().append(items);
+}
+
+$(document).ready(function() {
+  $('.not-interested').click(function() {
+    const pid = $(this).data('pid');
+    const card = $(this).closest('.product-card');
+    
+    // Send feedback to server
+    fetch(`/api/feedback?pid=${pid}&action=not_interested`, {
+      method: 'POST'
+    })
+    .then(response => {
+      if (response.ok) {
+        // Fade out and remove the card if request was successful
+        card.fadeOut(300, function() {
+          $(this).remove();
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Error sending feedback:', error);
+    });
+  });
+});
+</script>
+{% endblock %}
