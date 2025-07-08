@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-bolt text-warning me-2"></i>Featured Products
+        </h2>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown">
+                <i class="fas fa-sort me-1"></i>Sort By
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Price: Low to High</a></li>
+                <li><a class="dropdown-item" href="#">Price: High to Low</a></li>
+                <li><a class="dropdown-item" href="#">Rating</a></li>
+                <li><a class="dropdown-item" href="#">Newest</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for pid, product in featured_products.items() %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 product-card">
+                <div class="position-relative">
+                    <img src="{{ url_for('static', filename='images/' + product.image) }}" 
+                         class="card-img-top" 
+                         alt="{{ product.name }}"
+                         style="height: 200px; object-fit: contain; background-color: #f8f9fa;">
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <button class="btn btn-sm btn-outline-danger rounded-circle">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <div class="mb-2 rating-container">
+                        {% set full_stars = product.rating|int %}
+                        {% set has_half_star = (product.rating - full_stars) >= 0.5 %}
+                        
+                        {% for i in range(5) %}
+                            {% if i < full_stars %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% elif i == full_stars and has_half_star %}
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                            {% else %}
+                                <i class="far fa-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <small class="text-muted ms-1">{{ product.rating }}</small>
+                    </div>
+                    <p class="card-text text-success fw-bold">₹{{ "%.2f"|format(product.price) }}</p>
+                    <div class="mt-auto d-flex justify-content-between">
+                        <a href="{{ url_for('product_detail', product_id=pid) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i> View
+                        </a>
+                        <form method="POST" action="{{ url_for('add_to_cart', product_id=pid) }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-cart-plus me-1"></i> Add
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add this after the featured products section -->
+{% if 'user_id' in session %}
+<div class="container mt-5">
+  <h3><i class="fas fa-history me-2"></i>Recently Viewed</h3>
+  <div class="row" id="recently-viewed">
+    <!-- Will be populated by JavaScript -->
+  </div>
+</div>
+
+<script>
+// Load recently viewed products
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('/api/recently-viewed')
+    .then(response => response.json())
+    .then(products => {
+      const container = document.getElementById('recently-viewed');
+      products.forEach(product => {
+        container.innerHTML += `
+          <div class="col-md-3 mb-4">
+            <div class="card h-100">
+              <img src="${product.image}" class="card-img-top" alt="${product.name}">
+              <div class="card-body">
+                <h5 class="card-title">${product.name}</h5>
+                <a href="/product/${product.id}" class="btn btn-sm btn-outline-primary">View Again</a>
+              </div>
+            </div>
+          </div>`;
+      });
+    });
+});
+</script>
+{% endif %}
+{% endblock %}
