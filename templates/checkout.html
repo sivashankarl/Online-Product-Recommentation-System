@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Payment Method</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-4">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="payment_method" id="creditCard" value="credit_card" checked>
+                                <label class="form-check-label d-flex align-items-center" for="creditCard">
+                                    <i class="fab fa-cc-visa fa-2x text-primary me-3"></i>
+                                    <i class="fab fa-cc-mastercard fa-2x text-primary me-3"></i>
+                                    <i class="fab fa-cc-amex fa-2x text-primary me-3"></i>
+                                    <span>Credit/Debit Card</span>
+                                </label>
+                            </div>
+                            <div id="creditCardForm" class="ps-4">
+                                <div class="mb-3">
+                                    <label for="cardNumber" class="form-label">Card Number</label>
+                                    <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="expiryDate" class="form-label">Expiry Date</label>
+                                        <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="cvv" class="form-label">CVV</label>
+                                        <input type="text" class="form-control" id="cvv" placeholder="123">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cardName" class="form-label">Name on Card</label>
+                                    <input type="text" class="form-control" id="cardName" placeholder="John Doe">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="payment_method" id="upi" value="upi">
+                                <label class="form-check-label d-flex align-items-center" for="upi">
+                                    <img src="{{ url_for('static', filename='images/upi.png') }}" alt="UPI" style="height: 24px; margin-right: 12px;">
+                                    <span>UPI Payment</span>
+                                </label>
+                            </div>
+                            <div id="upiForm" class="ps-4" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="upiId" class="form-label">UPI ID</label>
+                                    <input type="text" class="form-control" id="upiId" placeholder="yourname@upi">
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <img src="{{ url_for('static', filename='images/gpay.png') }}" alt="Google Pay" style="height: 40px;">
+                                    <img src="{{ url_for('static', filename='images/phonepe.png') }}" alt="PhonePe" style="height: 40px;">
+                                    <img src="{{ url_for('static', filename='images/paytm.png') }}" alt="Paytm" style="height: 40px;">
+                                    <img src="{{ url_for('static', filename='images/bhim.png') }}" alt="BHIM" style="height: 40px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="payment_method" id="netBanking" value="net_banking">
+                                <label class="form-check-label d-flex align-items-center" for="netBanking">
+                                    <img src="{{ url_for('static', filename='images/netbanking.png') }}" alt="Net Banking" style="height: 24px; margin-right: 12px;">
+                                    <span>Net Banking</span>
+                                </label>
+                            </div>
+                            <div id="netBankingForm" class="ps-4" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="bankSelect" class="form-label">Select Bank</label>
+                                    <select class="form-select" id="bankSelect">
+                                        <option selected disabled>Choose your bank</option>
+                                        <option>State Bank of India</option>
+                                        <option>HDFC Bank</option>
+                                        <option>ICICI Bank</option>
+                                        <option>Axis Bank</option>
+                                        <option>Kotak Mahindra Bank</option>
+                                        <option>Punjab National Bank</option>
+                                        <option>Bank of Baroda</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod">
+                                <label class="form-check-label d-flex align-items-center" for="cod">
+                                    <i class="fas fa-money-bill-wave fa-2x text-success me-3"></i>
+                                    <span>Cash on Delivery (COD)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
+                            <i class="fas fa-lock me-2"></i> Complete Secure Payment
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-3">Products</h6>
+                    <ul class="list-group list-group-flush mb-3">
+                        {% for item in cart_items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div>
+                                <span class="fw-bold">{{ item.product.name }}</span>
+                                <br>
+                                <small class="text-muted">Qty: {{ item.quantity }}</small>
+                            </div>
+                            <span>₹{{ "%.2f"|format(item.total) }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Subtotal</span>
+                        <span>₹{{ "%.2f"|format(subtotal) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Shipping</span>
+                        <span>₹{{ "%.2f"|format(shipping) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Tax (10%)</span>
+                        <span>₹{{ "%.2f"|format(tax) }}</span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between fw-bold">
+                        <span>Total</span>
+                        <span>₹{{ "%.2f"|format(total) }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Delivery Address</h4>
+                </div>
+                <div class="card-body">
+                    <address>
+                        <strong>{{ session['username'] }}</strong><br>
+                        123 Main Street<br>
+                        Bangalore, Karnataka 560001<br>
+                        India<br>
+                        <i class="fas fa-phone me-2"></i> +91 9876543210
+                    </address>
+                    <a href="#" class="btn btn-outline-primary btn-sm">Change Address</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Show/hide payment method forms
+    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Hide all forms first
+            document.getElementById('creditCardForm').style.display = 'none';
+            document.getElementById('upiForm').style.display = 'none';
+            document.getElementById('netBankingForm').style.display = 'none';
+            
+            // Show the selected form
+            if (this.id === 'creditCard') {
+                document.getElementById('creditCardForm').style.display = 'block';
+            } else if (this.id === 'upi') {
+                document.getElementById('upiForm').style.display = 'block';
+            } else if (this.id === 'netBanking') {
+                document.getElementById('netBankingForm').style.display = 'block';
+            }
+        });
+    });
+</script>
+{% endblock %}
